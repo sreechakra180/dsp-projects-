@@ -1,0 +1,166 @@
+Speech Recognition with Python
+Known Vulnerabilities
+
+I stumbled across this great tutorial, so why not try it out
+
+httprealpython.compython-speech-recognition
+As recommended, we will use SpeechRecognition.
+
+After setting up my own repo, I found the author's
+
+httpgithub.comrealpythonpython-speech-recognition
+Raspberry
+
+This also works with Raspberry Pi (using Python 3).
+
+Contents
+The contents are as follows
+
+Prerequisites
+For microphone use
+Optional monotonic (for Python 2)
+For speech recognition
+Speech Engine
+Smoke Test
+Ambient Noise
+Speech testing
+And finally, the guessing game
+Raspberry Pi
+To Do
+Prerequisites
+Python 3 and pip installed (Python 2 is scheduled for End-of-life, although the instructions and code have been tested with Python 2 and an approprate requirements file for Python 2 is provided).
+
+For microphone use
+Check for pyaudio
+
+ import pyaudio as pa
+Traceback (most recent call last)
+  File stdin, line 1, in module
+ImportError No module named pyaudio
+
+[The next step is for linux; check the pyaudio requirements first.]
+
+Install portaudio19-dev
+
+$ sudo apt-get install portaudio19-dev
+Install pyaudio
+
+$ pip install --user pyaudio
+Verify installation
+
+ import pyaudio as pa
+ pa.__version__
+'0.2.11'
+
+Optional monotonic (for Python 2)
+SpeechRecognition recommends installing monotonic for Python 2 users.
+
+Check for monotonic
+
+$ pip list --format=freeze  grep monotonic
+Install monotonic
+
+$ pip install --user monotonic
+Verify installation
+
+$ pip list --format=freeze  grep monotonic
+monotonic==1.4
+$
+For speech recognition
+SpeechRecognition can be used as a sound recorder
+
+httpgithub.comUberispeech_recognitionblobmasterexampleswrite_audio.py
+This is probably fine for occasional use - but there are better options available.
+
+Check for SpeechRecognition
+
+$ pip list --format=freeze  grep SpeechRecognition
+Install SpeechRecognition
+
+$ pip install --user SpeechRecognition
+Verify
+
+ import speech_recognition as sr
+ sr.__version__
+'3.8.1'
+
+Speech Engine
+The tutorial uses the Google Web Speech API, however installing PocketSphinx (which can work offline) is fairly easy.
+
+Snowboy (which can also work offline) is an option for Hotword Detection, but perhaps unsuitable for speech recognition (SpeechRecognition tellingly refers to Snowboy as Snowboy Hotword Detection).
+
+For another online option, there is Wit.ai (which also has a Node.js SDK).
+
+Smoke Test
+The final step may take a few seconds to execute
+
+ import speech_recognition as sr
+ r = sr.Recognizer()
+ harvard = sr.AudioFile('audio_filesharvard.wav')
+ with harvard as source
+...     audio = r.record(source)
+... 
+ type(audio)
+class 'speech_recognition.AudioData'
+ r.recognize_google(audio)
+u'the stale smell of old beer lingers it takes heat to bring out the odor a cold dip restores health and zest a salt pickle taste fine with ham tacos al Pastore are my favorite a zestful food is the hot cross bun'
+ 
+Ambient Noise
+ jackhammer = sr.AudioFile('audio_filesjackhammer.wav')
+ with jackhammer as source
+...     audio = r.record(source)
+... 
+ r.recognize_google(audio)
+u'the snail smell of old beer drinkers'
+ with jackhammer as source
+...     r.adjust_for_ambient_noise(source)
+...     audio = r.record(source)
+... 
+ r.recognize_google(audio)
+u'still smell old gear vendors'
+ 
+[Slightly different from the tutorial's the snail smell of old gear vendors and still smell of old beer vendors.]
+
+And
+
+ with jackhammer as source
+...     r.adjust_for_ambient_noise(source, duration=0.5)
+...     audio = r.record(source)
+... 
+ r.recognize_google(audio)
+u'the snail smell like old beermongers'
+
+[Pretty much the same as the snail smell like old Beer Mongers.]
+
+Speech testing
+Using the speech recognition module
+
+$ python -m speech_recognition
+A moment of silence, please...
+Set minimum energy threshold to 259.109953712
+Say something!
+Got it! Now to recognize it...
+You said hello hello
+Got it! Now to recognize it...
+You said the rain in Spain
+Say something!
+^C$
+And
+
+ with mic as source
+...     audio = r.listen(source)
+... 
+ r.recognize_google(audio)
+u'Shazam'
+
+And, as stated in the article, a loud hand-clap generates an exception
+
+ with mic as source
+...     audio = r.listen(source)
+... 
+ r.recognize_google(audio)
+Traceback (most recent call last)
+  File stdin, line 1, in module
+  File homeowner.locallibpython2.7site-packagesspeech_recognition__init__.py, line 858, in recognize_google
+    if not isinstance(actual_result, dict) or len(actual_result.get(alternative, [])) == 0 raise UnknownValueError()
+speech_recognition.UnknownValueError
